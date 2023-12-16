@@ -1,0 +1,60 @@
+﻿
+
+<div class="modal @(IsShowing ? "show" : "") @(UseFade ? "fade" : "")" tabindex="-1" style="@CustomStyle">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                @if (Header is not null)
+                {
+                    @Header
+                }
+                <button type="button" class="btn-close" @onclick="Close" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (Body is not null)
+                {
+                    @Body
+                }
+            </div>
+            @if (Footer is not null)
+            {
+                <div class="modal-footer">
+                    @Footer
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+    [Parameter]
+    public RenderFragment? Body { get; set; }
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+
+    private string? CustomStyle { get; set; }
+
+    private bool IsShowing { get; set; }
+
+    [Parameter]
+    public bool UseFade { get; set; }
+
+    public void Open()
+    {
+        CustomStyle = "display:block;";
+        IsShowing = true;
+        StateHasChanged();
+        
+    }
+
+    public void Close()
+    {
+        CustomStyle = "display:none;";
+        IsShowing = false;
+        StateHasChanged();
+    }
+
+}

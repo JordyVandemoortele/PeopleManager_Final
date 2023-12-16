@@ -1,0 +1,59 @@
+﻿@page "/"
+@using PeopleManager.Dto.Results
+@using PeopleManager.Sdk
+@using PeopleManager.Ui.BlazorApp.Components.Dialogs
+@using Translations = Resources.Translations;
+@using System.Runtime.InteropServices.Marshalling
+
+@inject PersonApiService PersonApiService
+@inject IJSRuntime JsRuntime
+
+<PageTitle>People Manager</PageTitle>
+
+<h1>@Translations.WelcomeMessage</h1>
+
+@if (IsButtonVisible)
+{
+    <button @onclick="() => DoAlert()" class="btn btn-outline-primary">Click me!</button>
+}
+
+<h1>People Manager</h1>
+
+
+<div class="row">
+    @foreach (var person in Model)
+    {
+        <div class="col-4">
+            <PersonCard Model="@person" />
+        </div>
+    }
+</div>
+
+@code
+{
+    private static bool IsButtonVisible { get; set; } = true;
+    private Modal? Dialog { get; set; }
+
+    private IList<PersonResult> Model { get; set; } = new List<PersonResult>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var serviceResult = await PersonApiService.FindAsync();
+
+        Model = serviceResult.Data;
+
+        await base.OnInitializedAsync();
+    }
+
+    private ValueTask DoAlert()
+    {
+        return JsRuntime.InvokeVoidAsync("doAlert", "Dit is een alert message!");
+    }
+
+    [JSInvokable]
+    public static Task HideButton()
+    {
+        IsButtonVisible = false;
+        return Task.CompletedTask;
+    }
+}

@@ -1,0 +1,50 @@
+﻿@page "/people"
+@attribute [Authorize]
+
+@using PeopleManager.Dto.Results
+@using PeopleManager.Sdk
+@using Vives.Services.Model
+@using Microsoft.AspNetCore.Authorization
+
+@inject PersonApiService PersonApiService
+
+<h3>Manage People</h3>
+<a class="btn btn-primary" href="people/create">New Person</a>
+<table class="table table-dark table-striped">
+    <thead>
+    <tr>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <Virtualize TItem="PersonResult" ItemSize="55" ItemsProvider="@LoadPeople" OverscanCount="50">
+        <ItemContent>
+            <PersonRow Model="@context"></PersonRow>
+        </ItemContent>
+        <Placeholder>
+            <tr style="height:55px;">
+                <td colspan="3">Loading...</td>
+            </tr>
+        </Placeholder>
+    </Virtualize>
+    </tbody>
+</table>
+
+@code {
+    
+    private async ValueTask<ItemsProviderResult<PersonResult>> LoadPeople(ItemsProviderRequest request)
+    {
+        var paging = new Paging
+        {
+            StartIndex = request.StartIndex, 
+            PageSize = request.Count
+        };
+
+        var peopleResult = await PersonApiService.FindAsync(paging);
+
+        return new ItemsProviderResult<PersonResult>(peopleResult.Data, peopleResult.TotalCount);
+    }
+
+}

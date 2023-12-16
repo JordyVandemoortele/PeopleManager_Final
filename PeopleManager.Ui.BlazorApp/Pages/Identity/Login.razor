@@ -1,0 +1,69 @@
+﻿@page "/sign-in"
+
+
+@using Vives.Authentication.Abstractions
+
+@inject IdentityApiService IdentityApiService
+@inject NavigationManager NavigationManager
+@inject ITokenStore TokenStore
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<div class="row">
+    <div class="col-md-4">
+        <section>
+            <EditForm Model="Model" OnValidSubmit="ValidSubmit">
+
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+                <ValidationSummary></ValidationSummary>
+
+                <h2>Use a local account to log in.</h2>
+                <hr />
+                <div class="form-group mb-3">
+                    <label for="UserName" class="form-label">Email</label>
+                    <InputText @bind-Value="Model.Username" type="email" id="UserName" class="form-control" />
+                </div>
+                <div class="form-group mb-3">
+                    <label for="Password" class="form-label">Password</label>
+                    <InputText @bind-Value="Model.Password" type="password" id="Password" class="form-control" />
+                </div>
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                </div>
+                <div>
+                    <p>
+                        <a href="register?returnUrl=@ReturnUrl">Register as a new user</a>
+                    </p>
+                </div>
+            </EditForm>
+        </section>
+    </div>
+</div>
+
+
+@code {
+    [SupplyParameterFromQuery] 
+    private string ReturnUrl { get; set; } = "/";
+
+    public SignInRequest Model { get; set; } = new SignInRequest
+        {
+            Username = string.Empty,
+            Password = string.Empty
+        };
+
+    private async Task ValidSubmit()
+    {
+        var result = await IdentityApiService.SignInAsync(Model);
+        if (result.Errors.Any() || string.IsNullOrWhiteSpace(result.Token))
+        {
+            return;
+        }
+
+        await TokenStore.SaveToken(result.Token);
+
+        //Force the provider to get the state and notify everybody
+        await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        
+        NavigationManager.NavigateTo(ReturnUrl);
+    }
+}
